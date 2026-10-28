@@ -1,0 +1,210 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex,nofollow">
+<title>Timeless WiFi · Admin</title>
+<style>
+:root{--bg:#0b1120;--panel:#111a2e;--panel2:#0f172a;--line:#1e293b;--line2:#334155;--text:#e2e8f0;--muted:#94a3b8;--dim:#64748b;--sky:#38bdf8;--green:#4ade80;--red:#f87171;--amber:#fbbf24}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Arial,sans-serif;background:var(--bg);color:var(--text);font-size:14px;line-height:1.45}
+.top{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:16px 20px;border-bottom:1px solid var(--line);background:var(--panel2);position:sticky;top:0;z-index:5}
+.top h1{font-size:17px;font-weight:700}
+.top .meta{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.pill{font-size:11.5px;padding:3px 9px;border-radius:999px;border:1px solid var(--line2);color:var(--muted)}
+.pill.live{border-color:#166534;color:var(--green)}
+.pill.warn{border-color:#854d0e;color:var(--amber)}
+main{max-width:1200px;margin:0 auto;padding:20px 16px 60px}
+.tiles{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:12px;margin-bottom:16px}
+.tile{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:14px 16px}
+.tile .k{font-size:12px;color:var(--muted)}
+.tile .v{font-size:24px;font-weight:750;margin-top:4px;font-variant-numeric:tabular-nums}
+.tile .s{font-size:12px;color:var(--dim);margin-top:2px}
+.row{display:grid;grid-template-columns:2fr 1fr;gap:12px;margin-bottom:16px}
+@media(max-width:820px){.row{grid-template-columns:1fr}}
+.panel{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:16px}
+.panel h2{font-size:13px;font-weight:650;color:var(--muted);margin-bottom:12px}
+.bars{display:flex;align-items:flex-end;gap:6px;height:150px}
+.bar{flex:1;display:flex;flex-direction:column;justify-content:flex-end;align-items:center;gap:4px;height:100%}
+.bar i{display:block;width:100%;max-width:34px;background:var(--sky);border-radius:4px 4px 0 0;min-height:2px}
+.bar span{font-size:10px;color:var(--dim)}
+.bar:hover i{background:#7dd3fc}
+.pk{display:grid;gap:8px}
+.pk div{display:flex;justify-content:space-between;font-size:13px}
+.pk b{font-variant-numeric:tabular-nums}
+.problems{list-style:none;display:grid;gap:6px}
+.problems li{font-size:12.5px;color:var(--amber);padding-left:16px;position:relative}
+.problems li::before{content:"!";position:absolute;left:0;font-weight:800}
+.problems li.ok{color:var(--green)}
+.problems li.ok::before{content:"✓"}
+.cfg{font-size:12px;color:var(--dim);margin-top:10px;word-break:break-all}
+.filters{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px}
+.filters input,.filters select{background:var(--panel2);border:1px solid var(--line2);color:var(--text);border-radius:8px;padding:8px 10px;font:inherit}
+.filters input{flex:1;min-width:180px}
+button{font:inherit;cursor:pointer;border-radius:8px;border:1px solid var(--line2);background:var(--panel2);color:var(--text);padding:7px 11px}
+button:hover{border-color:var(--sky)}
+button.sm{padding:4px 8px;font-size:12px}
+.tbl{overflow-x:auto}
+table{width:100%;border-collapse:collapse;font-size:13px}
+th,td{text-align:left;padding:9px 10px;border-bottom:1px solid var(--line);white-space:nowrap}
+th{font-size:11.5px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.04em}
+td.num{text-align:right;font-variant-numeric:tabular-nums}
+.badge{display:inline-block;font-size:11px;font-weight:700;padding:2px 8px;border-radius:999px}
+.b-SUCCESS{background:#052e16;color:var(--green)}
+.b-PENDING{background:#422006;color:var(--amber)}
+.b-FAILED{background:#450a0a;color:var(--red)}
+.mono{font-family:ui-monospace,Menlo,Consolas,monospace;font-size:12px}
+.muted{color:var(--dim)}
+.reason{max-width:240px;overflow:hidden;text-overflow:ellipsis}
+.empty{padding:30px;text-align:center;color:var(--dim)}
+</style>
+</head>
+<body>
+<div class="top">
+  <h1>Timeless WiFi · Admin</h1>
+  <div class="meta"><span class="pill" id="env">…</span><span class="pill" id="store">…</span><button id="refresh">Refresh</button></div>
+</div>
+<main>
+  <div class="tiles">
+    <div class="tile"><div class="k">Revenue today</div><div class="v" id="t-today">—</div><div class="s" id="t-today-n"></div></div>
+    <div class="tile"><div class="k">Last 7 days</div><div class="v" id="t-week">—</div></div>
+    <div class="tile"><div class="k">Last 30 days</div><div class="v" id="t-month">—</div><div class="s" id="t-conv"></div></div>
+    <div class="tile"><div class="k">Active users</div><div class="v" id="t-active">—</div><div class="s" id="t-await"></div></div>
+    <div class="tile"><div class="k">Pending / failed (30d)</div><div class="v" id="t-pf">—</div></div>
+  </div>
+
+  <div class="row">
+    <div class="panel"><h2>Revenue, last 14 days (KES)</h2><div class="bars" id="bars"></div></div>
+    <div class="panel">
+      <h2>Setup checks</h2><ul class="problems" id="problems"></ul><div class="cfg" id="cfg"></div>
+      <h2 style="margin-top:16px">Sales by package (30d)</h2><div class="pk" id="pk"></div>
+    </div>
+  </div>
+
+  <div class="panel" style="margin-bottom:16px">
+    <h2>Test a payment</h2>
+    <div class="filters" style="align-items:center">
+      <input id="tp-phone" placeholder="Your Safaricom number, e.g. 0712345678" inputmode="numeric" style="max-width:280px">
+      <select id="tp-amount"><option value="1">Ksh 1</option><option value="10">Ksh 10</option></select>
+      <button id="tp-send">Send test prompt</button>
+    </div>
+    <div id="tp-log" class="mono muted" style="white-space:pre-wrap;font-size:12.5px"></div>
+  </div>
+
+  <div class="panel">
+    <div class="filters">
+      <input id="q" placeholder="Search phone, M-Pesa code, access code, checkout ID…">
+      <select id="status"><option value="">All statuses</option><option>SUCCESS</option><option>PENDING</option><option>FAILED</option></select>
+    </div>
+    <div class="tbl"><table>
+      <thead><tr><th>Time</th><th>Status</th><th>Phone</th><th>Package</th><th class="num">KES</th><th>M-Pesa</th><th>Code</th><th>Router</th><th>Expires</th><th>Note</th><th></th></tr></thead>
+      <tbody id="rows"><tr><td colspan="11" class="empty">Loading…</td></tr></tbody>
+    </table></div>
+  </div>
+</main>
+<script>
+const $ = id => document.getElementById(id);
+const kes = n => 'Ksh ' + Number(n || 0).toLocaleString();
+const fmt = d => d ? new Date(d).toLocaleString([], { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' }) : '';
+const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;' }[c]));
+
+async function j(url, opts) {
+  const r = await fetch(url, { credentials: 'same-origin', ...opts, headers: { 'Content-Type': 'application/json', ...(opts?.headers || {}) } });
+  const d = await r.json().catch(() => ({}));
+  if (!r.ok) throw new Error(d.message || r.statusText);
+  return d;
+}
+
+async function loadSummary() {
+  const s = await j('/api/v1/admin/summary');
+  $('t-today').textContent = kes(s.revenue.today); $('t-today-n').textContent = s.counts.today + ' payments';
+  $('t-week').textContent = kes(s.revenue.week);
+  $('t-month').textContent = kes(s.revenue.month); $('t-conv').textContent = s.conversion + '% of prompts paid';
+  $('t-active').textContent = s.counts.active; $('t-await').textContent = s.counts.awaitingRouter ? s.counts.awaitingRouter + ' waiting for router' : 'router in sync';
+  $('t-pf').textContent = s.counts.pending + ' / ' + s.counts.failed30d;
+  const env = s.config.mpesaEnv; $('env').textContent = 'M-Pesa: ' + env; $('env').className = 'pill ' + (env === 'production' ? 'live' : 'warn');
+  $('store').textContent = 'Storage: ' + s.config.storage; $('store').className = 'pill ' + (s.config.storage === 'supabase' ? 'live' : 'warn');
+  const days = Object.entries(s.byDay), max = Math.max(1, ...days.map(d => d[1]));
+  $('bars').innerHTML = days.map(([d, v]) => `<div class="bar" title="${d}: ${kes(v)}"><i style="height:${(v / max) * 100}%"></i><span>${d.slice(8)}</span></div>`).join('');
+  $('problems').innerHTML = s.config.problems.length ? s.config.problems.map(p => `<li>${esc(p)}</li>`).join('') : '<li class="ok">Everything looks configured.</li>';
+  $('cfg').textContent = `${s.config.transactionType} · callback ${s.config.callbackUrl || '(not set)'}`;
+  const pk = Object.entries(s.byPackage).sort((a, b) => b[1] - a[1]);
+  $('pk').innerHTML = pk.length ? pk.map(([k, v]) => `<div><span>${esc(k)}</span><b>${v}</b></div>`).join('') : '<div class="muted">No sales yet</div>';
+}
+
+async function loadRows() {
+  const p = new URLSearchParams({ q: $('q').value, status: $('status').value });
+  const { rows } = await j('/api/v1/admin/transactions?' + p);
+  if (!rows.length) { $('rows').innerHTML = '<tr><td colspan="11" class="empty">No transactions</td></tr>'; return; }
+  const now = new Date().toISOString();
+  $('rows').innerHTML = rows.map(r => {
+    const exp = r.expires_at ? (r.expires_at < now ? '<span class="muted">expired</span>' : fmt(r.expires_at)) : '';
+    let act = '';
+    if (r.status === 'PENDING') act = `<button class="sm" data-a="check" data-id="${esc(r.id)}">Check M-Pesa</button>`;
+    if (r.status === 'SUCCESS') act = `<button class="sm" data-a="requeue" data-id="${esc(r.id)}">Re-sync</button>`;
+    if (r.status !== 'SUCCESS') act += ` <button class="sm" data-a="paid" data-id="${esc(r.id)}">Mark paid</button>`;
+    return `<tr>
+      <td>${fmt(r.created_at)}</td><td><span class="badge b-${esc(r.status)}">${esc(r.status)}</span></td>
+      <td class="mono">${esc(r.phone)}</td><td>${esc(r.package_id)}</td><td class="num">${esc(r.paid_amount ?? r.amount)}</td>
+      <td class="mono">${esc(r.receipt || '')}</td><td class="mono">${r.status === 'SUCCESS' ? esc(r.username) : '<span class="muted">—</span>'}</td>
+      <td>${esc(r.mikrotik_sync || '')}</td><td>${exp}</td><td class="reason" title="${esc(r.reason || r.confirmed_by || '')}">${esc(r.reason || r.confirmed_by || '')}</td><td>${act}</td></tr>`;
+  }).join('');
+}
+
+$('rows').addEventListener('click', async e => {
+  const b = e.target.closest('button[data-a]'); if (!b) return;
+  const id = b.dataset.id, a = b.dataset.a;
+  try {
+    if (a === 'check') { const r = await j(`/api/v1/admin/transactions/${encodeURIComponent(id)}/check`, { method: 'POST' }); alert('Status: ' + r.status + (r.message ? '\n' + r.message : '')); }
+    if (a === 'requeue') await j(`/api/v1/admin/transactions/${encodeURIComponent(id)}/requeue`, { method: 'POST' });
+    if (a === 'paid') {
+      const receipt = prompt('Confirm you have seen this payment in your M-Pesa statement.\nEnter the M-Pesa receipt code:');
+      if (!receipt) return;
+      const r = await j(`/api/v1/admin/transactions/${encodeURIComponent(id)}/mark-paid`, { method: 'POST', body: JSON.stringify({ receipt }) });
+      alert('Activated. Access code: ' + r.username);
+    }
+    refresh();
+  } catch (err) { alert(err.message); }
+});
+
+let t; $('q').addEventListener('input', () => { clearTimeout(t); t = setTimeout(loadRows, 300); });
+$('status').addEventListener('change', loadRows);
+$('refresh').addEventListener('click', refresh);
+function refresh() { loadSummary().catch(e => console.error(e)); loadRows().catch(e => { $('rows').innerHTML = `<tr><td colspan="11" class="empty">${esc(e.message)}</td></tr>`; }); }
+// ---- Test payment ----
+const tpLog = (m, c) => { const d = document.createElement('div'); d.textContent = new Date().toLocaleTimeString() + '  ' + m; if (c) d.style.color = c; $('tp-log').appendChild(d); };
+$('tp-send').addEventListener('click', async () => {
+  const phone = $('tp-phone').value.trim(), amount = $('tp-amount').value;
+  if (!phone) return $('tp-phone').focus();
+  const env = $('env').textContent;
+  if (/production/.test(env) && !confirm(`This is LIVE M-Pesa: Ksh ${amount} will really be charged to ${phone} and paid to your till/paybill. Continue?`)) return;
+  $('tp-log').textContent = ''; $('tp-send').disabled = true;
+  try {
+    tpLog(`Sending Ksh ${amount} prompt to ${phone}…`);
+    const r = await j('/api/v1/admin/test-payment', { method: 'POST', body: JSON.stringify({ phone, amount }) });
+    tpLog(`✔ Safaricom accepted the request (${r.mode}). Enter your PIN on the phone.`, 'var(--green)');
+    for (let i = 0; i < 40; i++) {
+      await new Promise(res => setTimeout(res, 4000));
+      const s = await j('/api/v1/admin/test-payment/' + encodeURIComponent(r.transactionId));
+      if (s.status === 'SUCCESS') {
+        tpLog(`✔ PAID · receipt ${s.receipt || '(pending)'} · confirmed by ${s.confirmedBy} after ${s.ageSeconds}s`, 'var(--green)');
+        tpLog(s.confirmedBy === 'callback' ? '✔ Safaricom callback reached this server. Payments are fully working.'
+          : '! Confirmed by polling Safaricom, not by the callback. Check MPESA_CALLBACK_URL points to this server.', s.confirmedBy === 'callback' ? 'var(--green)' : 'var(--amber)');
+        break;
+      }
+      if (s.status === 'FAILED') {
+        tpLog(`✖ ${s.reason}`, 'var(--red)');
+        if (/cancel|PIN|balance/i.test(s.reason || '')) tpLog('The integration works; the payment just wasn\'t completed on the phone.', 'var(--amber)');
+        break;
+      }
+      if (i % 3 === 2) tpLog(`…still waiting (${s.ageSeconds}s)`);
+    }
+  } catch (e) { tpLog('✖ ' + e.message, 'var(--red)'); }
+  $('tp-send').disabled = false; refresh();
+});
+
+refresh(); setInterval(refresh, 30000);
+</script>
+</body>
+</html>

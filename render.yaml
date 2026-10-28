@@ -1,0 +1,51 @@
+services:
+  - type: web
+    name: timeless-wifi-backend
+    runtime: node
+    region: frankfurt
+    plan: free
+    buildCommand: npm ci --omit=dev
+    startCommand: node server.js
+    autoDeployTrigger: commit
+    healthCheckPath: /health
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: NODE_VERSION
+        value: 22.x
+      - key: MPESA_ENABLED
+        value: "true"
+      - key: MPESA_ENV
+        value: sandbox
+      - key: MPESA_TRANSACTION_TYPE
+        value: CustomerPayBillOnline
+      - key: MPESA_CALLBACK_SECRET
+        generateValue: true
+      - key: ROUTER_SECRET
+        generateValue: true
+      - key: ADMIN_PASSWORD
+        generateValue: true
+      - key: ADMIN_USERNAME
+        value: admin
+      - key: MIKROTIK_ENABLED
+        value: "false"
+      - key: PUBLIC_URL
+        sync: false
+      - key: SUPPORT_PHONE
+        sync: false
+      - key: MPESA_CONSUMER_KEY
+        sync: false
+      - key: MPESA_CONSUMER_SECRET
+        sync: false
+      - key: MPESA_SHORTCODE
+        sync: false
+      - key: MPESA_PASSKEY
+        sync: false
+      - key: MPESA_TILL_NUMBER
+        sync: false
+      - key: MPESA_CALLBACK_URL
+        sync: false
+      - key: SUPABASE_URL
+        sync: false
+      - key: SUPABASE_SERVICE_ROLE_KEY
+        sync: false

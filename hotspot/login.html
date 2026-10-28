@@ -1,0 +1,660 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#0b1120">
+<meta http-equiv="pragma" content="no-cache">
+<meta http-equiv="expires" content="-1">
+<title>Timeless WiFi · Connect</title>
+<style>
+/* No external fonts: a captive portal has no internet until the user logs in. */
+:root{
+  --bg:#0b1120; --bg2:#151a3a; --card:rgba(15,23,42,.72); --line:rgba(255,255,255,.09); --line2:rgba(255,255,255,.16);
+  --text:#f1f5f9; --muted:#94a3b8; --dim:#64748b;
+  --sky:#38bdf8; --indigo:#818cf8; --green:#22c55e; --green-soft:#4ade80; --red:#f87171; --amber:#fbbf24;
+  --mpesa:#16a34a;
+  --r-lg:22px; --r-md:14px; --r-sm:10px;
+}
+*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{min-height:100%}
+body{
+  font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Helvetica Neue",Ubuntu,Arial,sans-serif;
+  background:var(--bg); color:var(--text); line-height:1.45;
+  display:flex; justify-content:center; padding:max(16px,env(safe-area-inset-top)) 16px 32px;
+}
+.bg{position:fixed;inset:0;z-index:-1;overflow:hidden;background:radial-gradient(1200px 600px at 10% -10%,#1e3a8a55,transparent 60%),radial-gradient(900px 600px at 110% 110%,#5b21b655,transparent 60%),linear-gradient(160deg,var(--bg),var(--bg2))}
+.orb{position:absolute;border-radius:50%;filter:blur(70px);opacity:.35;animation:float 22s ease-in-out infinite alternate}
+.o1{width:340px;height:340px;background:var(--sky);top:-120px;left:-120px}
+.o2{width:420px;height:420px;background:var(--indigo);bottom:-160px;right:-140px;animation-delay:-7s}
+@keyframes float{to{transform:translate(40px,60px) scale(1.08)}}
+@media (prefers-reduced-motion:reduce){.orb,.spinner{animation:none!important}}
+
+.wrap{width:100%;max-width:460px}
+.card{background:var(--card);backdrop-filter:blur(18px);-webkit-backdrop-filter:blur(18px);border:1px solid var(--line);border-radius:var(--r-lg);box-shadow:0 30px 60px -20px rgba(0,0,0,.6),inset 0 1px 0 rgba(255,255,255,.06);position:relative;overflow:hidden}
+
+header{padding:26px 22px 18px;text-align:center;border-bottom:1px solid var(--line)}
+.logo{display:inline-flex;align-items:center;justify-content:center;width:52px;height:52px;border-radius:16px;background:linear-gradient(135deg,var(--sky),var(--indigo));box-shadow:0 10px 30px -8px rgba(56,189,248,.6);margin-bottom:12px}
+.logo svg{width:28px;height:28px;color:#fff}
+h1{font-size:24px;font-weight:750;letter-spacing:-.02em}
+.tag{color:var(--muted);font-size:14px;margin-top:2px}
+.device{display:inline-flex;align-items:center;gap:8px;margin-top:14px;padding:6px 12px;border-radius:999px;background:rgba(0,0,0,.25);border:1px solid var(--line);font-size:12px;color:var(--muted);font-variant-numeric:tabular-nums}
+.dot{width:7px;height:7px;border-radius:50%;background:var(--green-soft);box-shadow:0 0 8px var(--green-soft)}
+
+.tabs{display:grid;grid-template-columns:1fr 1fr;gap:4px;margin:16px 18px 0;padding:4px;border-radius:12px;background:rgba(0,0,0,.25);border:1px solid var(--line)}
+.tab{appearance:none;border:0;background:transparent;color:var(--muted);font:inherit;font-size:14px;font-weight:600;padding:10px;border-radius:9px;cursor:pointer}
+.tab[aria-selected="true"]{background:rgba(255,255,255,.08);color:var(--text);box-shadow:inset 0 0 0 1px var(--line2)}
+
+.body{padding:18px 18px 22px}
+.label{display:flex;justify-content:space-between;align-items:baseline;font-size:13px;font-weight:600;color:var(--muted);margin:0 2px 10px}
+.label small{font-weight:500;color:var(--dim)}
+
+.alert{display:flex;gap:10px;align-items:flex-start;padding:12px 14px;border-radius:var(--r-md);font-size:13.5px;margin-bottom:16px;border:1px solid}
+.alert svg{flex:none;width:18px;height:18px;margin-top:1px}
+.alert.err{background:rgba(248,113,113,.1);border-color:rgba(248,113,113,.35);color:#fecaca}
+.alert.info{background:rgba(56,189,248,.08);border-color:rgba(56,189,248,.3);color:#bae6fd}
+
+.grid{display:grid;grid-template-columns:repeat(2,1fr);gap:10px;margin-bottom:20px}
+@media(min-width:380px){.grid{grid-template-columns:repeat(3,1fr)}}
+.pkg{position:relative;appearance:none;font:inherit;color:inherit;text-align:center;cursor:pointer;background:rgba(255,255,255,.03);border:1px solid var(--line);border-radius:var(--r-md);padding:16px 8px 13px;transition:transform .15s,border-color .15s,background .15s}
+.grid .pkg:last-child:nth-child(odd){grid-column:1/-1}
+@media(min-width:380px){.grid .pkg:last-child:nth-child(odd){grid-column:auto}.grid .pkg:last-child:nth-child(3n+1){grid-column:1/-1}}
+.pkg:hover{background:rgba(255,255,255,.06)}
+.pkg:active{transform:scale(.98)}
+.pkg:focus-visible{outline:2px solid var(--sky);outline-offset:2px}
+.pkg[aria-checked="true"]{background:rgba(56,189,248,.1);border-color:var(--sky);box-shadow:0 0 0 1px var(--sky),0 10px 24px -12px rgba(56,189,248,.6)}
+.pkg svg{width:22px;height:22px;color:var(--muted);margin-bottom:6px}
+.pkg[aria-checked="true"] svg{color:var(--sky)}
+.pkg .n{font-weight:650;font-size:14px}
+.pkg .p{font-size:13px;color:var(--muted);margin-top:2px;font-variant-numeric:tabular-nums}
+.pkg .p b{color:var(--text);font-weight:700}
+.pkg[aria-checked="true"] .p b{color:var(--sky)}
+.pkg .note{font-size:10.5px;color:var(--dim);margin-top:3px}
+.pkg .spd{display:inline-flex;align-items:center;gap:3px;margin-top:6px;font-size:10.5px;font-weight:650;color:var(--muted);padding:2px 7px;border-radius:999px;background:rgba(255,255,255,.05);border:1px solid var(--line)}
+.pkg[aria-checked="true"] .spd{color:var(--text);border-color:var(--line2)}
+.tier{display:flex;flex-direction:column;align-items:flex-start;gap:2px;margin:2px 2px 16px}
+.tier h3{font-size:14px;font-weight:700;display:flex;align-items:center;gap:8px}
+.tier h3 .tg{white-space:nowrap;font-size:10px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;padding:2px 7px;border-radius:999px}
+.tier.lite h3 .tg{background:rgba(251,191,36,.14);color:var(--amber);border:1px solid rgba(251,191,36,.35)}
+.tier.standard h3 .tg{background:rgba(56,189,248,.12);color:var(--sky);border:1px solid rgba(56,189,248,.35)}
+.tier p{font-size:12px;color:var(--dim)}
+.tier.lite ~ .grid .pkg[aria-checked="true"]{background:rgba(251,191,36,.08);border-color:var(--amber);box-shadow:0 0 0 1px var(--amber),0 10px 24px -12px rgba(251,191,36,.5)}
+.tier.lite ~ .grid .pkg[aria-checked="true"] svg,.tier.lite ~ .grid .pkg[aria-checked="true"] .p b{color:var(--amber)}
+.tier.lite ~ .grid .pop{background:linear-gradient(90deg,#f59e0b,#fbbf24);color:#1c1917}
+.tsec + .tsec{margin-top:10px;padding-top:16px;border-top:1px solid var(--line)}
+.speed-note{display:flex;gap:8px;align-items:flex-start;font-size:12.5px;color:var(--muted);margin:-6px 2px 18px;padding:10px 12px;border-radius:var(--r-sm);background:rgba(251,191,36,.06);border:1px solid rgba(251,191,36,.2)}
+.speed-note svg{flex:none;width:16px;height:16px;color:var(--amber);margin-top:1px}
+.pop{position:absolute;top:-8px;left:50%;transform:translateX(-50%);white-space:nowrap;font-size:9.5px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;padding:2px 8px;border-radius:999px;background:linear-gradient(90deg,var(--sky),var(--indigo));color:#fff}
+.skel{height:86px;border-radius:var(--r-md);background:linear-gradient(90deg,rgba(255,255,255,.03),rgba(255,255,255,.07),rgba(255,255,255,.03));background-size:200% 100%;animation:sh 1.2s infinite}
+@keyframes sh{to{background-position:-200% 0}}
+
+.field{margin-bottom:18px}
+.inp{position:relative}
+.inp svg{position:absolute;left:14px;top:50%;transform:translateY(-50%);width:19px;height:19px;color:var(--dim);pointer-events:none}
+.inp .pre{position:absolute;left:44px;top:50%;transform:translateY(-50%);color:var(--muted);font-size:16px;pointer-events:none}
+input.t{width:100%;background:rgba(0,0,0,.28);border:1px solid var(--line);border-radius:var(--r-md);padding:15px 14px 15px 44px;font:inherit;font-size:17px;color:var(--text);outline:none;letter-spacing:.02em;transition:border-color .15s,box-shadow .15s}
+input.t::placeholder{color:rgba(255,255,255,.28)}
+input.t:focus{border-color:var(--sky);box-shadow:0 0 0 3px rgba(56,189,248,.18)}
+input.t[aria-invalid="true"]{border-color:var(--red)}
+input.code{text-transform:uppercase;letter-spacing:.14em;font-weight:650}
+input.code::placeholder{text-transform:none;letter-spacing:.02em;font-weight:400}
+.hint{font-size:12px;color:var(--dim);margin:7px 2px 0}
+.hint.err{color:var(--red)}
+
+.btn{width:100%;display:flex;align-items:center;justify-content:center;gap:10px;appearance:none;border:0;border-radius:var(--r-md);padding:16px;font:inherit;font-size:16px;font-weight:700;color:#fff;cursor:pointer;transition:transform .12s,filter .15s,opacity .15s}
+.btn svg{width:20px;height:20px}
+.btn:active{transform:translateY(1px)}
+.btn:disabled{opacity:.55;cursor:not-allowed}
+.btn.pay{background:linear-gradient(135deg,#16a34a,#15803d);box-shadow:0 12px 26px -10px rgba(34,197,94,.65)}
+.btn.main{background:linear-gradient(135deg,var(--sky),var(--indigo));box-shadow:0 12px 26px -10px rgba(56,189,248,.6)}
+.btn.ghost{background:rgba(255,255,255,.06);border:1px solid var(--line2);font-weight:600;font-size:15px;padding:13px}
+.secure{display:flex;align-items:center;justify-content:center;gap:6px;color:var(--dim);font-size:12px;margin-top:12px}
+.secure svg{width:14px;height:14px}
+
+.divider{display:flex;align-items:center;gap:10px;color:var(--dim);font-size:12px;margin:22px 0 16px}
+.divider::before,.divider::after{content:"";flex:1;height:1px;background:var(--line)}
+
+.how{margin-top:20px;padding:14px;border-radius:var(--r-md);background:rgba(0,0,0,.18);border:1px solid var(--line)}
+.how ol{list-style:none;counter-reset:s;display:grid;gap:8px}
+.how li{counter-increment:s;display:flex;gap:10px;font-size:13px;color:var(--muted)}
+.how li::before{content:counter(s);flex:none;width:20px;height:20px;border-radius:50%;display:grid;place-items:center;font-size:11px;font-weight:700;color:var(--text);background:rgba(255,255,255,.08)}
+
+footer{text-align:center;font-size:12px;color:var(--dim);margin-top:16px}
+footer a{color:var(--muted)}
+
+/* Overlay */
+.ov{position:fixed;inset:0;z-index:20;display:flex;flex-direction:column;align-items:center;justify-content:safe center;overflow-y:auto;text-align:center;padding:28px 22px;background:rgba(11,17,32,.94);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);opacity:0;pointer-events:none;transition:opacity .25s}
+.ov.on{opacity:1;pointer-events:auto}
+.spinner{width:54px;height:54px;border-radius:50%;border:4px solid rgba(255,255,255,.1);border-top-color:var(--green-soft);animation:spin .9s linear infinite;margin-bottom:18px}
+@keyframes spin{to{transform:rotate(360deg)}}
+.big-ic{width:64px;height:64px;border-radius:50%;display:grid;place-items:center;margin-bottom:16px}
+.big-ic svg{width:34px;height:34px}
+.big-ic.ok{background:rgba(34,197,94,.15);color:var(--green-soft);box-shadow:0 0 0 8px rgba(34,197,94,.06)}
+.big-ic.bad{background:rgba(248,113,113,.14);color:var(--red);box-shadow:0 0 0 8px rgba(248,113,113,.05)}
+.ov h3{font-size:21px;font-weight:750;margin-bottom:6px}
+.ov p.d{font-size:14px;color:var(--muted);max-width:320px;margin-bottom:20px}
+.phone-chip{display:inline-block;font-weight:700;color:var(--text);font-variant-numeric:tabular-nums}
+.steps{width:100%;max-width:330px;text-align:left;display:grid;gap:12px;padding:14px 16px;border-radius:var(--r-md);background:rgba(0,0,0,.25);border:1px solid var(--line)}
+.st{display:flex;align-items:center;gap:12px;font-size:13.5px;color:var(--dim)}
+.st i{flex:none;width:20px;height:20px;border-radius:50%;border:2px solid currentColor;display:grid;place-items:center;font-style:normal}
+.st.active{color:var(--sky);font-weight:600}
+.st.active i{border-color:rgba(56,189,248,.3);border-top-color:var(--sky);animation:spin .9s linear infinite}
+.st.done{color:var(--green-soft)}
+.st.done i{background:var(--green-soft);border-color:var(--green-soft);color:#052e16}
+.st.done i::after{content:"✓";font-size:12px;font-weight:900}
+.timer{margin-top:14px;font-size:12px;color:var(--dim);font-variant-numeric:tabular-nums}
+.voucher{margin:4px 0 18px;padding:14px 18px;border-radius:var(--r-md);border:1px dashed rgba(74,222,128,.45);background:rgba(34,197,94,.07);min-width:240px}
+.voucher .k{font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
+.voucher .v{font-size:28px;font-weight:800;letter-spacing:.18em;color:var(--green-soft);font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;margin:2px 0}
+.voucher .m{font-size:12px;color:var(--muted)}
+.ov .actions{display:grid;gap:10px;width:100%;max-width:330px;margin-top:18px}
+.link{background:none;border:0;color:var(--muted);font:inherit;font-size:13px;text-decoration:underline;cursor:pointer;padding:6px}
+.link:hover{color:var(--text)}
+
+.toasts{position:fixed;left:50%;bottom:max(18px,env(safe-area-inset-bottom));transform:translateX(-50%);z-index:100;width:calc(100% - 32px);max-width:420px;display:grid;gap:8px}
+.toast{display:flex;gap:10px;align-items:center;padding:13px 16px;border-radius:12px;font-size:14px;font-weight:500;backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);border:1px solid;animation:up .3s cubic-bezier(.16,1,.3,1)}
+.toast.error{background:rgba(127,29,29,.75);border-color:rgba(248,113,113,.45)}
+.toast.success{background:rgba(20,83,45,.8);border-color:rgba(74,222,128,.45)}
+@keyframes up{from{transform:translateY(14px);opacity:0}}
+.hidden{display:none!important}
+.sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0)}
+</style>
+</head>
+<body>
+<div class="bg" aria-hidden="true"><div class="orb o1"></div><div class="orb o2"></div></div>
+
+<main class="wrap">
+  <div class="card" id="card">
+    <header>
+      <div class="logo" aria-hidden="true"><svg fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24"><path d="M5 12.55a11 11 0 0 1 14.08 0"/><path d="M1.42 9a16 16 0 0 1 21.16 0"/><path d="M8.53 16.11a6 6 0 0 1 6.95 0"/><circle cx="12" cy="20" r="1"/></svg></div>
+      <h1 id="brand">Timeless WiFi</h1>
+      <p class="tag">Fast, unlimited internet. Pay with M-Pesa.</p>
+      <div class="device"><span class="dot"></span><span id="device">Detecting device…</span></div>
+    </header>
+
+    <div class="tabs" role="tablist">
+      <button class="tab" role="tab" id="tab-buy" aria-selected="true" aria-controls="panel-buy">Buy package</button>
+      <button class="tab" role="tab" id="tab-code" aria-selected="false" aria-controls="panel-code">I have a code</button>
+    </div>
+
+    <div class="body">
+      <!-- RouterOS fills $(error) when a login fails -->
+      <div id="router-error" class="alert err hidden" role="alert">
+        <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M12 8v4m0 4h.01"/></svg>
+        <span id="router-error-text"></span>
+      </div>
+
+      <!-- ============ BUY ============ -->
+      <section id="panel-buy" role="tabpanel" aria-labelledby="tab-buy">
+        <div class="label"><span>1. Choose a package</span><small>Prices in KES</small></div>
+        <div id="grid" role="radiogroup" aria-label="Packages">
+          <div class="grid"><div class="skel"></div><div class="skel"></div><div class="skel"></div>
+          <div class="skel"></div><div class="skel"></div><div class="skel"></div></div>
+        </div>
+
+        <div id="speed-note" class="speed-note hidden">
+          <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4m0-4h.01"/></svg>
+          <span id="speed-note-text"></span>
+        </div>
+
+        <div class="field">
+          <label class="label" for="phone"><span>2. M-Pesa number</span><small>Safaricom only</small></label>
+          <div class="inp">
+            <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="6" y="2" width="12" height="20" rx="2.5"/><path d="M11 18h2"/></svg>
+            <input id="phone" class="t" type="tel" inputmode="numeric" autocomplete="tel" placeholder="0712 345 678" maxlength="13" aria-describedby="phone-hint">
+          </div>
+          <p class="hint" id="phone-hint">You'll get an M-Pesa prompt on this phone.</p>
+        </div>
+
+        <button id="pay" class="btn pay" disabled>
+          <svg fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24"><path d="M13 2 3 14h9l-1 8 10-12h-9l1-8z"/></svg>
+          <span id="pay-label">Pay &amp; connect</span>
+        </button>
+        <p class="secure"><svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="4" y="11" width="16" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg>Secured by Safaricom M-Pesa. We never see your PIN.</p>
+
+        <div class="how">
+          <ol>
+            <li>Pick a package and enter your M-Pesa number.</li>
+            <li>Enter your M-Pesa PIN on the prompt that pops up.</li>
+            <li>You're online automatically. Keep your access code to reconnect.</li>
+          </ol>
+        </div>
+      </section>
+
+      <!-- ============ CODE / ALREADY PAID ============ -->
+      <section id="panel-code" role="tabpanel" aria-labelledby="tab-code" class="hidden">
+        <form id="voucher-form" autocomplete="off" novalidate>
+          <label class="label" for="voucher"><span>Access code</span><small>From a previous purchase or a voucher</small></label>
+          <div class="field">
+            <div class="inp">
+              <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M21 2l-2 2m-7.6 7.6a5.5 5.5 0 1 1-7.78 7.78 5.5 5.5 0 0 1 7.78-7.78zm0 0L15.5 7.5m0 0 3 3L22 7l-3-3m-3.5 3.5L19 4"/></svg>
+              <input id="voucher" class="t code" maxlength="20" placeholder="e.g. K7M3QX" autocapitalize="characters" spellcheck="false">
+            </div>
+          </div>
+          <button class="btn main" type="submit">Connect with code</button>
+        </form>
+
+        <div class="divider">Paid but not connected?</div>
+
+        <form id="recover-form" autocomplete="off" novalidate>
+          <label class="label" for="receipt"><span>M-Pesa confirmation code</span><small>From the SMS</small></label>
+          <div class="field">
+            <div class="inp">
+              <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+              <input id="receipt" class="t code" maxlength="12" placeholder="e.g. SJK4ABC12D" autocapitalize="characters" spellcheck="false">
+            </div>
+            <p class="hint">The 10-character code at the start of your M-Pesa SMS.</p>
+          </div>
+          <button class="btn ghost" type="submit" id="recover-btn">Find my payment</button>
+        </form>
+      </section>
+    </div>
+
+  </div>
+
+  <footer>
+    <span id="support"></span>
+    <div style="margin-top:6px">© <span id="yr"></span> Timeless WiFi</div>
+  </footer>
+</main>
+
+    <!-- ============ PROGRESS OVERLAY ============ -->
+<div id="ov" class="ov" role="dialog" aria-modal="true" aria-live="polite" aria-labelledby="ov-title">
+  <div id="ov-spin" class="spinner"></div>
+  <div id="ov-ok" class="big-ic ok hidden"><svg fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24"><path d="M5 13l4 4L19 7"/></svg></div>
+  <div id="ov-bad" class="big-ic bad hidden"><svg fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" viewBox="0 0 24 24"><path d="M6 6l12 12M18 6 6 18"/></svg></div>
+  <h3 id="ov-title">Sending M-Pesa prompt</h3>
+  <p class="d" id="ov-desc">Connecting to M-Pesa…</p>
+
+  <div id="ov-voucher" class="voucher hidden">
+    <div class="k">Your access code</div>
+    <div class="v" id="ov-code">——————</div>
+    <div class="m" id="ov-meta"></div>
+  </div>
+
+  <div class="steps" id="ov-steps">
+    <div class="st active" id="s1"><i></i><span>Sending prompt to your phone</span></div>
+    <div class="st" id="s2"><i></i><span>Waiting for your M-Pesa PIN</span></div>
+    <div class="st" id="s3"><i></i><span>Activating your internet</span></div>
+  </div>
+  <div class="timer" id="ov-timer"></div>
+
+  <div class="actions">
+    <button id="ov-primary" class="btn main hidden"></button>
+    <button id="ov-resend" class="btn ghost hidden">Send the prompt again</button>
+  </div>
+  <button id="ov-cancel" class="link hidden">Cancel</button>
+</div>
+
+<!-- RouterOS HotSpot login form (auto-submitted after payment / code entry) -->
+<form name="sendin" id="sendin" action="$(link-login-only)" method="post" class="hidden">
+  <input type="hidden" name="username">
+  <input type="hidden" name="password">
+  <input type="hidden" name="dst" value="$(link-orig)">
+  <input type="hidden" name="popup" value="false">
+</form>
+
+<div class="toasts" id="toasts" aria-live="assertive"></div>
+
+<!-- md5.js ships with the default RouterOS hotspot files and is needed for CHAP logins -->
+<script src="md5.js"></script>
+<script>
+// =====================================================================
+// CONFIG — set this to your deployed backend (and add the host to the Walled Garden)
+// e.g. https://timeless-wifi-yourname.koyeb.app/api/v1  or  https://timeless-wifi.fly.dev/api/v1
+// =====================================================================
+var BACKEND_URL = 'https://YOUR-BACKEND-HOST/api/v1';
+
+// Values injected by RouterOS. Keep these in single quotes (CHAP strings use octal escapes).
+var RT = {
+  mac: '$(mac)',
+  ip: '$(ip)',
+  error: '$(error)',
+  chapId: '$(chap-id)',
+  chapChallenge: '$(chap-challenge)',
+  loginUrl: '$(link-login-only)'
+};
+function rtVal(v){ return (v && v.indexOf('$' + '(') !== 0) ? v : ''; } // unsubstituted = local preview
+
+// Used only if the backend can't be reached; the server's list (and prices) always wins.
+var FALLBACK_PACKAGES = [
+  {id:'lite_2h',tier:'lite',name:'2 Hours',price:10,speed:3,icon:'leaf'},
+  {id:'lite_6h',tier:'lite',name:'6 Hours',price:20,speed:3,icon:'leaf'},
+  {id:'lite_24h',tier:'lite',name:'24 Hours',price:40,speed:3,icon:'leaf',popular:true},
+  {id:'pkg_30m',tier:'standard',name:'30 Minutes',price:10,speed:5,icon:'bolt'},
+  {id:'pkg_1h',tier:'standard',name:'1 Hour',price:20,speed:5,icon:'clock'},
+  {id:'pkg_3h',tier:'standard',name:'3 Hours',price:50,speed:5,icon:'clock'},
+  {id:'pkg_night',tier:'standard',name:'Night Owl',price:30,speed:5,icon:'moon',note:'10pm – 8am'},
+  {id:'pkg_24h',tier:'standard',name:'24 Hours',price:100,speed:5,icon:'star',popular:true},
+  {id:'pkg_1w',tier:'standard',name:'1 Week',price:500,speed:5,icon:'calendar'},
+  {id:'pkg_1m',tier:'standard',name:'1 Month',price:1500,speed:5,icon:'building'}
+];
+var TIERS = {
+  lite: { title: 'Lite', tag: 'Budget', desc: function(sp, min){ return 'Up to ' + sp + ' · from Ksh ' + min + ' · browsing & WhatsApp'; } },
+  standard: { title: 'Standard', tag: 'Full speed', desc: function(sp){ return 'Up to ' + sp + ' · streaming & video calls'; } }
+};
+
+var ICONS = {
+  bolt:'<path d="M13 2 3 14h9l-1 8 10-12h-9l1-8z"/>',
+  clock:'<circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 3"/>',
+  moon:'<path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"/>',
+  star:'<path d="m12 2 3.1 6.3 6.9 1-5 4.9 1.2 6.8L12 17.8 5.8 21l1.2-6.8-5-4.9 6.9-1z"/>',
+  calendar:'<rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/>',
+  leaf:'<path d="M11 20A7 7 0 0 1 9.8 6.1C15.5 5 17 4.48 19 2c1 2 2 4.18 2 8 0 5.5-4.78 10-10 10Z"/><path d="M2 21c0-3 1.85-5.36 5.08-6C9.5 14.52 12 13 13 12"/>',
+  building:'<rect x="4" y="2" width="16" height="20" rx="2"/><path d="M9 22v-4h6v4M8 6h.01M12 6h.01M16 6h.01M8 10h.01M12 10h.01M16 10h.01M8 14h.01M12 14h.01M16 14h.01"/>'
+};
+
+// =====================================================================
+var $id = function(i){ return document.getElementById(i); };
+var mac = rtVal(RT.mac) || new URLSearchParams(location.search).get('mac') || '';
+var state = { packages: [], selected: null, txId: null, poll: null, tick: null, started: 0, phone: '' };
+
+$id('yr').textContent = new Date().getFullYear();
+$id('device').textContent = mac ? 'Device ' + mac : 'Preview mode — no device detected';
+
+var routerErr = rtVal(RT.error);
+if (routerErr) { $id('router-error-text').textContent = routerErr; $id('router-error').classList.remove('hidden'); }
+
+function store(k, v){ try { if (v === undefined) return localStorage.getItem(k); localStorage.setItem(k, v); } catch(e){ return null; } }
+
+function toast(msg, type){
+  var t = document.createElement('div');
+  t.className = 'toast ' + (type || 'error');
+  t.textContent = msg;
+  $id('toasts').appendChild(t);
+  setTimeout(function(){ t.style.transition='opacity .3s'; t.style.opacity='0'; setTimeout(function(){ t.remove(); }, 300); }, 4500);
+}
+
+function api(path, opts){
+  opts = opts || {};
+  var ctrl = new AbortController();
+  var to = setTimeout(function(){ ctrl.abort(); }, opts.timeout || 20000);
+  return fetch(BACKEND_URL + path, {
+    method: opts.method || 'GET',
+    headers: opts.body ? { 'Content-Type': 'application/json' } : undefined,
+    body: opts.body ? JSON.stringify(opts.body) : undefined,
+    signal: ctrl.signal, cache: 'no-store'
+  }).then(function(r){
+    return r.json().catch(function(){ return {}; }).then(function(d){ d._status = r.status; d._ok = r.ok; return d; });
+  }).catch(function(e){
+    throw new Error(e.name === 'AbortError' ? 'The payment server took too long to respond.' :
+      'Can\'t reach the payment server. Make sure you\'re connected to the Timeless WiFi network.');
+  }).finally(function(){ clearTimeout(to); });
+}
+
+// ---------------- Tabs ----------------
+function showTab(which){
+  var buy = which === 'buy';
+  $id('tab-buy').setAttribute('aria-selected', buy);
+  $id('tab-code').setAttribute('aria-selected', !buy);
+  $id('panel-buy').classList.toggle('hidden', !buy);
+  $id('panel-code').classList.toggle('hidden', buy);
+}
+$id('tab-buy').onclick = function(){ showTab('buy'); };
+$id('tab-code').onclick = function(){ showTab('code'); };
+
+// ---------------- Packages ----------------
+function mbps(n){ return n ? (n < 1 ? Math.round(n * 1000) + ' kbps' : n + ' Mbps') : ''; }
+function fullName(p){ return (p.tier === 'lite' ? 'Lite ' : '') + p.name; }
+function renderPackages(list){
+  // order: tiers in the order they first appear (lite first by default)
+  var order = [], groups = {};
+  list.forEach(function(p){ var t = p.tier || 'standard'; if (!groups[t]) { groups[t] = []; order.push(t); } groups[t].push(p); });
+  state.packages = [];
+  order.forEach(function(t){ state.packages = state.packages.concat(groups[t]); });
+  var root = $id('grid'); root.innerHTML = '';
+  var remembered = store('tw_pkg');
+  var def = state.packages.filter(function(p){ return p.id === remembered; })[0] ||
+            state.packages.filter(function(p){ return p.popular && p.tier !== 'lite'; })[0] || state.packages[0];
+  order.forEach(function(t){
+    var items = groups[t], info = TIERS[t] || { title: t, tag: '', desc: function(){ return ''; } };
+    var maxSp = Math.max.apply(null, items.map(function(p){ return p.speed || 0; }));
+    var minPrice = Math.min.apply(null, items.map(function(p){ return p.price; }));
+    var sec = document.createElement('div'); sec.className = 'tsec';
+    var head = document.createElement('div'); head.className = 'tier ' + t;
+    head.innerHTML = '<h3><span class="tn"></span><span class="tg"></span></h3><p></p>';
+    head.querySelector('.tn').textContent = info.title;
+    head.querySelector('.tg').textContent = info.tag;
+    if (!info.tag) head.querySelector('.tg').remove();
+    head.querySelector('p').textContent = info.desc(maxSp ? mbps(maxSp) : 'max speed', minPrice);
+    var g = document.createElement('div'); g.className = 'grid';
+    sec.appendChild(head); sec.appendChild(g); root.appendChild(sec);
+    items.forEach(function(p){ g.appendChild(pkgButton(p)); });
+  });
+  select(def.id);
+}
+function pkgButton(p){
+    var b = document.createElement('button');
+    b.type = 'button'; b.className = 'pkg'; b.setAttribute('role','radio'); b.dataset.id = p.id;
+    b.innerHTML = (p.popular ? '<span class="pop">Popular</span>' : '') +
+      '<svg fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24">' + (ICONS[p.icon] || ICONS.clock) + '</svg>' +
+      '<div class="n"></div><div class="p">Ksh <b></b></div>' + (p.note ? '<div class="note"></div>' : '') +
+      (p.speed ? '<span class="spd"></span>' : '');
+    b.querySelector('.n').textContent = p.name;
+    b.querySelector('b').textContent = Number(p.price).toLocaleString();
+    if (p.note) b.querySelector('.note').textContent = p.note;
+    if (p.speed) b.querySelector('.spd').textContent = mbps(p.speed);
+    b.setAttribute('aria-label', fullName(p) + ', Ksh ' + p.price + (p.speed ? ', up to ' + mbps(p.speed) : ''));
+    b.onclick = function(){ select(p.id); };
+    return b;
+}
+function select(id){
+  state.selected = state.packages.filter(function(p){ return p.id === id; })[0];
+  Array.prototype.forEach.call(document.querySelectorAll('.pkg'), function(b){ b.setAttribute('aria-checked', b.dataset.id === id); b.tabIndex = b.dataset.id === id ? 0 : -1; });
+  $id('pay-label').textContent = 'Pay Ksh ' + Number(state.selected.price).toLocaleString() + ' & connect';
+  var sn = $id('speed-note');
+  if (state.selected.tier === 'lite') {
+    $id('speed-note-text').textContent = 'Lite is capped at ' + mbps(state.selected.speed) +
+      ': fine for browsing, WhatsApp and social media. Videos may buffer; choose Standard for streaming.';
+    sn.classList.remove('hidden');
+  } else sn.classList.add('hidden');
+  store('tw_pkg', id);
+  validate();
+}
+$id('grid').addEventListener('keydown', function(e){
+  if (['ArrowRight','ArrowLeft','ArrowDown','ArrowUp'].indexOf(e.key) < 0 || !state.selected) return;
+  e.preventDefault();
+  var i = state.packages.indexOf(state.selected), n = state.packages.length;
+  i = (e.key === 'ArrowRight' || e.key === 'ArrowDown') ? (i + 1) % n : (i - 1 + n) % n;
+  select(state.packages[i].id);
+  document.querySelector('.pkg[data-id="' + state.packages[i].id + '"]').focus();
+});
+
+api('/packages', { timeout: 8000 }).then(function(d){
+  if (d.brand) { $id('brand').textContent = d.brand; document.title = d.brand + ' · Connect'; }
+  if (d.supportPhone) {
+    var s = $id('support'); s.textContent = 'Need help? Call ';
+    var a = document.createElement('a'); a.href = 'tel:' + d.supportPhone; a.textContent = d.supportPhone; s.appendChild(a);
+  }
+  if (d.paymentsEnabled === false) toast('M-Pesa payments are temporarily unavailable. You can still use an access code.');
+  renderPackages(d.packages && d.packages.length ? d.packages : FALLBACK_PACKAGES);
+}).catch(function(){ renderPackages(FALLBACK_PACKAGES); });
+
+// ---------------- Phone ----------------
+var phoneEl = $id('phone');
+function normPhone(v){
+  var d = String(v).replace(/\D/g,'');
+  if (d.indexOf('254') === 0) d = '0' + d.slice(3);
+  else if (d.length === 9 && /^[71]/.test(d)) d = '0' + d;
+  return d;
+}
+function phoneOk(v){ return /^0(7|1)\d{8}$/.test(normPhone(v)); }
+function prettyPhone(d){ return d.replace(/^(\d{4})(\d{3})(\d{0,3}).*/, function(_, a, b, c){ return a + ' ' + b + (c ? ' ' + c : ''); }); }
+function validate(){
+  var ok = phoneOk(phoneEl.value) && !!state.selected;
+  $id('pay').disabled = !ok;
+  return ok;
+}
+phoneEl.addEventListener('input', function(){
+  var d = this.value.replace(/[^\d+]/g,'');
+  if (d.indexOf('+') > 0) d = d.replace(/\+/g,'');
+  this.value = d.slice(0, 13);
+  this.removeAttribute('aria-invalid');
+  $id('phone-hint').className = 'hint'; $id('phone-hint').textContent = 'You\'ll get an M-Pesa prompt on this phone.';
+  validate();
+});
+phoneEl.addEventListener('blur', function(){
+  if (!this.value) return;
+  if (phoneOk(this.value)) { this.value = prettyPhone(normPhone(this.value)); }
+  else { this.setAttribute('aria-invalid','true'); $id('phone-hint').className='hint err'; $id('phone-hint').textContent='Enter a Safaricom number like 0712 345 678.'; }
+});
+phoneEl.addEventListener('keydown', function(e){ if (e.key === 'Enter' && validate()) startPayment(); });
+var savedPhone = store('tw_phone'); if (savedPhone) { phoneEl.value = prettyPhone(savedPhone); validate(); }
+
+// ---------------- Overlay ----------------
+function step(n, s){ var el = $id('s' + n); el.className = 'st' + (s ? ' ' + s : ''); }
+function ov(o){
+  $id('ov').classList.add('on');
+  $id('ov-title').textContent = o.title || '';
+  $id('ov-desc').innerHTML = '';
+  if (o.desc) $id('ov-desc').appendChild(typeof o.desc === 'string' ? document.createTextNode(o.desc) : o.desc);
+  $id('ov-spin').classList.toggle('hidden', o.icon !== 'spin');
+  $id('ov-ok').classList.toggle('hidden', o.icon !== 'ok');
+  $id('ov-bad').classList.toggle('hidden', o.icon !== 'bad');
+  $id('ov-steps').classList.toggle('hidden', !o.steps);
+  $id('ov-voucher').classList.toggle('hidden', !o.voucher);
+  $id('ov-cancel').classList.toggle('hidden', !o.cancel);
+  $id('ov-resend').classList.toggle('hidden', !o.resend);
+  var pb = $id('ov-primary');
+  pb.classList.toggle('hidden', !o.primary);
+  if (o.primary) { pb.textContent = o.primary.label; pb.onclick = o.primary.onClick; }
+  if (!o.keepTimer) $id('ov-timer').textContent = '';
+}
+function closeOv(){ stopPolling(); $id('ov').classList.remove('on'); }
+function stopPolling(){ clearTimeout(state.poll); clearInterval(state.tick); state.poll = null; state.tick = null; state.txId = null; }
+$id('ov-cancel').onclick = closeOv;
+$id('ov-resend').onclick = function(){ stopPolling(); startPayment(); };
+
+function phoneDesc(prefix, suffix){
+  var f = document.createDocumentFragment();
+  f.appendChild(document.createTextNode(prefix));
+  var b = document.createElement('span'); b.className = 'phone-chip'; b.textContent = prettyPhone(state.phone); f.appendChild(b);
+  f.appendChild(document.createTextNode(suffix));
+  return f;
+}
+
+// ---------------- Payment ----------------
+$id('pay').onclick = startPayment;
+
+function startPayment(){
+  if (!validate()) { phoneEl.focus(); return; }
+  if (!mac) toast('Preview mode: no device detected, so the router can\'t log you in.');
+  state.phone = normPhone(phoneEl.value);
+  store('tw_phone', state.phone);
+  [1,2,3].forEach(function(n){ step(n, n === 1 ? 'active' : ''); });
+  ov({ title: 'Sending M-Pesa prompt', desc: 'Ksh ' + state.selected.price + ' for ' + fullName(state.selected) + (state.selected.speed ? ' · up to ' + mbps(state.selected.speed) : ''), icon: 'spin', steps: true });
+
+  api('/pay', { method: 'POST', body: { phone: state.phone, packageId: state.selected.id, mac: mac, ip: rtVal(RT.ip) } })
+    .then(function(d){
+      if (!d._ok || !d.success) throw new Error(d.message || 'Could not start the payment.');
+      state.txId = d.transactionId; state.started = Date.now();
+      step(1, 'done'); step(2, 'active');
+      ov({ title: 'Check your phone', desc: phoneDesc('Enter your M-Pesa PIN on the prompt sent to ', '.'), icon: 'spin', steps: true, cancel: true, keepTimer: true });
+      startTimer(); poll(0);
+    })
+    .catch(function(e){ fail('Payment not started', e.message, false); });
+}
+
+function startTimer(){
+  clearInterval(state.tick);
+  state.tick = setInterval(function(){
+    var s = Math.floor((Date.now() - state.started) / 1000);
+    if (s === 35) $id('ov-resend').classList.remove('hidden');
+    $id('ov-timer').textContent = s < 60 ? 'Waiting… ' + s + 's' : 'Still checking with M-Pesa… ' + Math.floor(s/60) + 'm ' + (s%60) + 's';
+  }, 1000);
+}
+
+function poll(attempt){
+  var id = state.txId; if (!id) return;
+  var delay = attempt < 15 ? 2000 : 4000;
+  state.poll = setTimeout(function(){
+    api('/status/' + encodeURIComponent(id), { timeout: 12000 }).then(function(d){
+      if (state.txId !== id) return;
+      if (d.status === 'SUCCESS') return paid(d);
+      if (d.status === 'FAILED') return fail('Payment not completed', d.reason || 'The payment was cancelled or failed.', true);
+      if (Date.now() - state.started > 5 * 60 * 1000) return fail('No confirmation yet', 'If money left your M-Pesa, open "I have a code" and enter your M-Pesa SMS code.', true);
+      poll(attempt + 1);
+    }).catch(function(){ if (state.txId === id) poll(attempt + 1); });
+  }, delay);
+}
+
+function fail(title, msg, canRetry){
+  stopPolling();
+  ov({ title: title, desc: msg, icon: 'bad',
+       primary: canRetry ? { label: 'Try again', onClick: function(){ startPayment(); } } : { label: 'Back', onClick: closeOv },
+       cancel: canRetry });
+  $id('ov-cancel').textContent = 'Close';
+}
+
+function paid(d){
+  var id = state.txId; stopPolling();
+  step(2, 'done'); step(3, 'active');
+  showVoucher(d, 'Payment received!', 'Activating your access…');
+  step(3, 'active');
+  // Wait until the router has created the user (routerReady), max ~30s, then log in.
+  var t0 = Date.now();
+  (function waitRouter(){
+    if (d.routerReady || Date.now() - t0 > 30000 || !id) {
+      step(3, 'done'); $id('ov-desc').textContent = 'Logging you in…';
+      return setTimeout(function(){ hotspotLogin(d.username, d.password); }, 900);
+    }
+    setTimeout(function(){
+      api('/status/' + encodeURIComponent(id), { timeout: 8000 }).then(function(n){ d.routerReady = n.routerReady; })
+        .catch(function(){}).then(waitRouter);
+    }, 2500);
+  })();
+}
+
+function showVoucher(d, title, desc){
+  $id('ov-code').textContent = d.username;
+  var meta = [d.package];
+  if (d.expiresAt) meta.push('valid until ' + new Date(d.expiresAt).toLocaleString([], { weekday:'short', hour:'2-digit', minute:'2-digit' }));
+  if (d.receipt) meta.push('M-Pesa ' + d.receipt);
+  $id('ov-meta').textContent = meta.filter(Boolean).join(' · ');
+  store('tw_last_code', d.username);
+  ov({ title: title, desc: desc, icon: 'ok', voucher: true, steps: true,
+       primary: { label: 'Connect now', onClick: function(){ hotspotLogin(d.username, d.password); } } });
+  $id('ov-title').style.color = 'var(--green-soft)';
+}
+
+// ---------------- RouterOS login (PAP or CHAP) ----------------
+function hotspotLogin(user, pass){
+  var f = document.sendin;
+  if (!rtVal(RT.loginUrl)) { toast('Preview mode: in the hotspot this logs you in automatically.', 'success'); return; }
+  f.username.value = user;
+  var chapId = rtVal(RT.chapId);
+  if (chapId && typeof hexMD5 === 'function') f.password.value = hexMD5(RT.chapId + pass + RT.chapChallenge);
+  else f.password.value = pass;
+  f.submit();
+}
+
+// ---------------- Code / recover ----------------
+var lastCode = store('tw_last_code'); if (lastCode) $id('voucher').value = lastCode;
+
+$id('voucher-form').onsubmit = function(e){
+  e.preventDefault();
+  var c = $id('voucher').value.trim().toUpperCase().replace(/\s+/g,'');
+  if (c.length < 4) { toast('Enter your access code.'); $id('voucher').focus(); return; }
+  hotspotLogin(c, c);
+};
+
+$id('recover-form').onsubmit = function(e){
+  e.preventDefault();
+  var r = $id('receipt').value.toUpperCase().replace(/[^A-Z0-9]/g,'');
+  if (r.length < 8) { toast('Enter the M-Pesa code from your SMS.'); $id('receipt').focus(); return; }
+  var btn = $id('recover-btn'); btn.disabled = true; btn.textContent = 'Searching…';
+  api('/recover', { method: 'POST', body: { receipt: r } }).then(function(d){
+    if (!d._ok || !d.success) throw new Error(d.message || 'Payment not found.');
+    [1,2,3].forEach(function(n){ step(n, 'done'); });
+    showVoucher(d, 'Payment found!', 'Tap Connect to get online.');
+  }).catch(function(err){ toast(err.message); })
+    .finally(function(){ btn.disabled = false; btn.textContent = 'Find my payment'; });
+};
+
+// Resume polling quickly when the user comes back from the M-Pesa prompt
+document.addEventListener('visibilitychange', function(){
+  if (!document.hidden && state.txId) { clearTimeout(state.poll); poll(0); }
+});
+</script>
+</body>
+</html>

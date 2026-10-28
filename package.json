@@ -1,0 +1,26 @@
+{
+  "name": "timelesswifiportal",
+  "version": "2.0.0",
+  "description": "Timeless WiFi hotspot portal backend: M-Pesa STK Push + MikroTik",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "test": "node test/e2e.js",
+    "check-mpesa": "node scripts/check-mpesa.js"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "dependencies": {
+    "@supabase/supabase-js": "^2.112.3",
+    "axios": "^1.19.0",
+    "cors": "^2.8.6",
+    "dotenv": "^17.4.2",
+    "express": "^5.2.1",
+    "node-routeros": "^1.6.9"
+  },
+  "engines": {
+    "node": ">=18"
+  }
+}
